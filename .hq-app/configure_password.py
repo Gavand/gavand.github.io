@@ -1,28 +1,9 @@
-"""Run locally to configure or rotate the HQ password, without committing it."""
-import getpass, json, os, secrets
+"""Create a private Cloudflare login verifier; never commit the result."""
+import getpass,hashlib,json,secrets,os
 from pathlib import Path
-from security import hash_password
-
-def configure(password, root):
-    if len(password)<8: raise ValueError('Use a password of at least 8 characters.')
-    salt = secrets.token_hex(16)
-    data = {'salt':salt,'password_hash':hash_password(password,salt)}
-    directory = root / 'data'
-    directory.mkdir(parents=True,exist_ok=True)
-    path = directory / 'auth.json'
-    fd = os.open(str(path),os.O_WRONLY|os.O_CREAT|os.O_TRUNC,0o600)
-    os.fchmod(fd,0o600)
-    with os.fdopen(fd,'w') as out: json.dump(data,out)
-    # Revoke old sessions on password rotation.
-    database = directory / 'hq.sqlite3'
-    if database.exists():
-        import sqlite3
-        with sqlite3.connect(database) as con:
-            if con.execute("SELECT 1 FROM sqlite_master WHERE name='sessions'").fetchone(): con.execute('DELETE FROM sessions')
-    return path
-
-if __name__ == '__main__':
-    password = getpass.getpass('HQ password: ')
-    if password != getpass.getpass('Confirm password: '): raise SystemExit('Passwords differ')
-    configure(password,Path(__file__).resolve().parent)
-    print('Password configured. Restart the server. Keep data/auth.json private.')
+password=getpass.getpass('HQ password: ')
+if len(password)<8 or password!=getpass.getpass('Confirm password: '):raise SystemExit('Passwords must match and have at least 8 characters')
+salt=secrets.token_hex(16)
+proof=hashlib.pbkdf2_hmac('sha256',password.encode(),bytes.fromhex(salt),600000).hex()
+path=Path('work.auth.json');path.write_text(json.dumps({'salt':salt,'password_hash':hashlib.sha256(proof.encode()).hexdigest(),'format':'client-pbkdf2-sha256-600000'}));path.chmod(0o600)
+print('Private verifier saved. Pipe work.auth.json to wrangler secret put HQ_AUTH_CONFIG. Do not publish it.')

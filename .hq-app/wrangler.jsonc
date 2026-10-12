@@ -1,0 +1,6 @@
+{
+ "name":"andbotics-hq", "main":"worker.mjs", "compatibility_date":"2026-10-11",
+ "assets":{"directory":"./static","binding":"ASSETS","run_worker_first":true,"html_handling":"none"},
+ "d1_databases":[{"binding":"DB","database_name":"andbotics-hq","database_id":"538c9604-fdbb-4536-9604-7029723d6f2e"}],
+ "vars":{"HQ_PUBLIC_ORIGIN":"https://andbotics-hq.andbotics-hq-cloudflare.workers.dev"}
+}

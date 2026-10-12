@@ -1,56 +1,23 @@
-# Andbotics HQ — protected business workspace
+# Andbotics HQ — Cloudflare Free
 
-This application is a separate server hosted at `hq.andbotics.com`. The public GitHub Pages site remains at `www.andbotics.com`. `hq/index.html` redirects visitors from `/hq` to the protected application.
+Cloudflare Worker + D1 persistent database. The existing public website stays on GitHub Pages. Render is unused. The dashboard and logo are retained. Research/outreach are simulated; Google integrations are not connected. No sending endpoint exists, even for approved drafts.
 
-**Do not merge the redirect until the backend, custom domain and login are verified.** GitHub Pages cannot run the Python server. A redirect alone does not deploy HQ.
+## Setup
 
-## Local start
+Use Node 22+ and install with `npm install` (or `pnpm install`). Run `npx wrangler login` with account/user read, Worker-script write and D1 write scopes. Create the database with `npx wrangler d1 create andbotics-hq` and enter its ID in `wrangler.jsonc`. Initialize it with `npx wrangler d1 execute andbotics-hq --remote --file schema.sql`.
 
-Python 3.9+ is sufficient; no dependencies are required.
+Set `HQ_AUTH_CONFIG` using `npx wrangler secret put HQ_AUTH_CONFIG`. Run this folder's `python3 configure_password.py` and pipe ignored `work.auth.json` to the secret command. Its verifier format differs from the original Python app. Never commit this secret. Set `HQ_PUBLIC_ORIGIN` to the exact HTTPS workers.dev origin, then run `npx wrangler deploy`. Static assets must use `run_worker_first: true`; otherwise authentication could be bypassed for HTML files.
 
-```sh
-cd .hq-app
-python3 configure_password.py
-python3 server.py
-```
+The browser derives a password proof using PBKDF2 SHA-256 with 600,000 iterations over HTTPS. The Worker verifies its SHA-256 against the secret, so the secret does not contain the reusable proof. Treat the proof like a password; do not log or store it. This avoids Cloudflare’s 100,000-round server PBKDF2 cap. The Worker uses server-side hashed sessions, Secure/HttpOnly cookies, eight-hour expiration, CSRF and exact-origin checks. Changing the secret revokes existing sessions. Login attempts are globally limited to 10 per 15 minutes. This conservative single-owner limit can temporarily block everyone after repeated attempts. Verify login under actual Free-plan CPU limits before considering deployment finished.
 
-Open http://127.0.0.1:8765/hq/. Enter your chosen workspace password when configuring the local app. Source contains no default password. The server refuses to start if authentication is not configured.
+For local preview, copy configuration to ignored `work.local.json`, set origin to `http://localhost:8787`, create ignored `.dev.vars` containing the contents of the generated verifier file, initialize D1 with `--local`, and run `npx wrangler dev --config work.local.json`. Test with `TEST_PASSWORD` in the environment and `python3 tests/integration.py`. This test writes a local QA lead; never run against the live database unless intentional.
 
-## Hosting setup — owner action required
+## Private business data
 
-1. Create a Render account and connect the `Gavand/gavand.github.io` repository. Review the service and storage pricing before provisioning: `render.yaml` requests a **paid starter service with a 1 GB persistent disk**. No paid service has been provisioned by this change.
-2. Create a Blueprint using the prepared branch and `render.yaml`. The Docker build uses `.hq-app/` only and excludes all runtime/private data. Automatic deployments are disabled.
-3. Set the secret `HQ_AUTH_CONFIG` to the entire JSON content of the **locally generated** `.hq-app/data/auth.json`. Keep that value in Render's secret settings, never in GitHub. This stores a salted PBKDF2 password hash rather than plaintext. Configure your selected password locally to obtain the JSON; do not put the password in a command argument.
-4. Add the custom domain `hq.andbotics.com` in Render. At your DNS provider, add the **hq subdomain record Render specifies**, preserving the existing apex/www GitHub Pages records. Wait for verified domain and HTTPS. The configured `HQ_PUBLIC_ORIGIN` is `https://hq.andbotics.com`; login on other hostnames is deliberately rejected. The `/healthz` endpoint exposes readiness only and works for Render health checks.
-5. Verify sign-in, sign-out, unauthorized API access, lead persistence after restart, and mobile layouts at the actual HTTPS domain.
-6. Transfer private business records separately to the persistent disk. Source starts with **zero leads** and contains no tracker, contact list, private document snapshots or database. For existing records, use an SQLite backup taken while the local server is stopped, transfer it to `/var/data/hq.sqlite3`, and revoke copied sessions. For a fresh import, securely transfer the local `references/business-data.json` to `/var/data/references/business-data.json` and restart. Render documents authenticated SSH/SCP transfers. The import runs once; later restarts preserve edits. Keep all other source snapshots private.
-7. Only after the domain and login work, merge the repository branch so GitHub Pages publishes `/hq`. Confirm both `https://www.andbotics.com/hq/` and the apex-to-www redirect reach HQ.
+The deployed database starts empty. Obtain approval before transferring private records to Cloudflare. Generate an ignored SQL file with `python3 export_snapshot.py /path/to/private/business-data.json private-import.sql`, then import with `npx wrangler d1 execute andbotics-hq --remote --file private-import.sql`. Existing edited leads are preserved. Never upload the private import to GitHub. Source snapshots and CAD assets stay private on your computer.
 
-## Runtime configuration
+## Website link and domain
 
-| Variable | Purpose |
-| --- | --- |
-| `PORT` | Hosting provider listening port |
-| `HQ_BIND` | `0.0.0.0` inside the host container; loopback by default locally |
-| `HQ_PUBLIC_ORIGIN` | Exact public HTTPS origin used for host and CSRF checks |
-| `HQ_AUTH_CONFIG` | Secret JSON with salt and password hash |
-| `HQ_DATABASE` | Persistent database file; `/var/data/hq.sqlite3` |
-| `HQ_REFERENCE_DIR` | Private snapshot location; `/var/data/references` |
+Start with the free workers.dev address. A custom Worker domain requires the domain's DNS zone on Cloudflare. Do not change nameservers until every existing DNS record (including mail) is inventoried and preserved. `hq.andbotics.com` is optional; `/hq` on GitHub Pages can redirect directly to the workers.dev URL. Enable that redirect only after live login and persistence checks pass.
 
-SQLite is for one server instance. Keep backups private. The standard-library server is a small single-owner MVP; HTTPS terminates at the hosting proxy. No multi-user access controls or automatic Google integration are implemented.
-
-## Password controls
-
-All dashboard and data routes require a valid server-side session. Sessions expire after eight hours; logout deletes the server-side session. Production cookies are Secure, HttpOnly and SameSite=Strict. Mutations require a CSRF token and exact Origin. Ten recent login attempts lock the shared login for fifteen minutes. Session tokens are stored hashed in SQLite. Static login styling and the logo are public; records and app routes are protected.
-
-Rotate the password by generating a new configuration, updating `HQ_AUTH_CONFIG`, deleting existing rows from the `sessions` table, and redeploying. Local configuration rotation revokes sessions in the default local database automatically. A production secret change also requires explicit session revocation.
-
-## Verification and limitations
-
-```sh
-python3 -m unittest discover -s .hq-app/tests -v
-```
-
-Research and outreach remain template simulations. Approvals save drafts without sending emails. Gmail, Calendar and Drive integration panels are not live OAuth connections. Finance and materials show read-only private snapshots when imported. The private-data import test is skipped in public source because its fixture contains actual contacts; it passes in the private local bundle.
-
-References: [GitHub Pages](https://docs.github.com/en/pages/getting-started-with-github-pages/what-is-github-pages), [Render persistent disks](https://render.com/docs/disks), [Render Blueprint specification](https://render.com/docs/blueprint-spec).
+Stay on Workers Free; no paid upgrade is needed for the MVP. Free quotas can stop requests when exhausted. AI providers may charge separately when added. Export regular private backups with `npx wrangler d1 export andbotics-hq --remote --output private-backup.sql`. Keep backups out of public source. This is a single-owner MVP, not a multi-user platform.
