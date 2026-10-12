@@ -1,0 +1,6 @@
+data/
+references/
+tests/
+*.png
+__pycache__/
+.git/
