@@ -1,0 +1,6 @@
+.hq-app/data/
+.hq-app/references/
+**/__pycache__/
+*.pyc
+*.sqlite3
+.env
