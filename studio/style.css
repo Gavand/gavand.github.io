@@ -15,3 +15,5 @@
 @media(max-width:720px){.stage.is-advanced{height:710px;min-height:0}.stage.is-advanced .viewer{top:85px;bottom:250px}.advanced-toggle{top:52px}.piece-editor{bottom:75px}.piece-colors .swatches{gap:11px}.piece-colors .swatch{width:25px;height:25px}.piece-heading strong{font-size:12px}.piece-heading>div>span{font-size:9px}}
 
 .design-actions{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}.design-actions .primary-button{gap:8px;padding:16px 12px;text-align:left;font-size:12px;line-height:1.4}.design-actions .download-button{background:transparent;color:var(--green);border:1px solid var(--green)}.design-actions .download-button:hover:not(:disabled){background:#f0f3eb}.design-actions .download-button:disabled{opacity:.45;cursor:wait}@media(max-width:380px){.design-actions{grid-template-columns:1fr}}
+
+@media(max-width:720px){.product-layout>.product-heading{padding:0 2%}.configurator>.config-section:first-child{margin-top:0}}

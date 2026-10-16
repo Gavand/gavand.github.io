@@ -3,6 +3,16 @@ import { OrbitControls } from './assets/vendor/OrbitControls.js';
 import { STLLoader } from './assets/vendor/STLLoader.js';
 
 const $ = id => document.getElementById(id);
+
+const productHeading = document.querySelector('.product-heading');
+const mobileLayout = window.matchMedia('(max-width: 720px)');
+function placeProductHeading() {
+  const container = mobileLayout.matches ? document.querySelector('.product-layout') : $('customize');
+  container.prepend(productHeading);
+}
+placeProductHeading();
+mobileLayout.addEventListener('change', placeProductHeading);
+
 const zoneNames = {head:'Head',body:'Body',arms:'Arms',legs:'Legs',feet:'Feet',details:'Details'};
 const colors = [ ['White','#dedede'],['Black','#111315'],['Forest Green','#16552e'],['Graphite','#34383e'],['Orange','#c7470a'],['Blue','#1646ae'],['Yellow','#dea600'],['Purple','#622591'] ];
 const defaultDesign = Object.fromEntries(Object.keys(zoneNames).map(key => [key,'#dedede']));
