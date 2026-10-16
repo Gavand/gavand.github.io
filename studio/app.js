@@ -128,7 +128,7 @@ $('share').onclick = async () => {
 $('close-dialog').onclick = () => $('link-dialog').close();
 function download(blob,name) { const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(url),10000); }
 $('export').onclick = () => download(new Blob([JSON.stringify({version:2,model:'AC-1',palette:currentPreset,colors:design,parts:partColors},null,2)],{type:'application/json'}),'andbotics-ac1-colors.json');
-$('snapshot').onclick = () => {
+function downloadDesign() {
   if (!ready) return;
   if(selectionBox) selectionBox.visible=false;
   const hidden=meshes.filter(mesh=>!mesh.visible);hidden.forEach(mesh=>mesh.visible=true);
@@ -140,6 +140,8 @@ $('snapshot').onclick = () => {
   output.toBlob(blob => {if(blob) {download(blob,'andbotics-ac1-preview.png'); notify('Preview downloaded.');}},'image/png');
   sync();
 };
+$('snapshot').onclick = downloadDesign;
+$('download-design').onclick = downloadDesign;
 window.addEventListener('hashchange', () => {const shared = getDesignFromURL(); if(shared) {design = shared; partColors = sharedParts(); sync(); notify('Shared design loaded.');}});
 for(const [name,color] of colors) {
   const button=document.createElement('button');button.className='swatch';button.style.background=color;button.dataset.color=color;button.setAttribute('aria-label','Paint selected piece '+name.toLowerCase());button.title=name;button.disabled=true;
@@ -221,10 +223,10 @@ async function initViewer() {
     if(['ArrowUp','ArrowDown'].includes(event.key)){event.preventDefault();const offset=camera.position.clone().sub(controls.target);offset.multiplyScalar(event.key==='ArrowUp'?.9:1.1);offset.clampLength(controls.minDistance,controls.maxDistance);camera.position.copy(controls.target).add(offset);controls.update();}
   });
   controls.addEventListener('start',()=>{controls.autoRotate=false;$('rotate').setAttribute('aria-pressed','false');});
-  canvas.addEventListener('webglcontextlost',event=>{event.preventDefault();ready=false;renderer.setAnimationLoop(null);$('model-status').textContent='Preview paused';$('loading').hidden=false;$('loading-label').textContent='3D preview interrupted. Reload to restore it.';$('snapshot').disabled=true;});
+  canvas.addEventListener('webglcontextlost',event=>{event.preventDefault();ready=false;renderer.setAnimationLoop(null);$('model-status').textContent='Preview paused';$('loading').hidden=false;$('loading-label').textContent='3D preview interrupted. Reload to restore it.';$('snapshot').disabled=true;$('download-design').disabled=true;});
   resize(); setView('studio'); ready=true; new ResizeObserver(resize).observe($('viewer'));
   renderer.setAnimationLoop(()=>{if(!document.hidden && ready){controls.update();renderer.render(scene,camera);}});
-  $('loading').hidden=true;$('snapshot').disabled=false;$('model-status').textContent='Live 3D preview';$('viewer').dataset.loadedParts=String(meshes.length);sync();
+  $('loading').hidden=true;$('snapshot').disabled=false;$('download-design').disabled=false;$('model-status').textContent='Live 3D preview';$('viewer').dataset.loadedParts=String(meshes.length);sync();
 }
 initViewer().catch(error=>{
   console.error(error);$('model-status').textContent='Preview unavailable';$('loading-label').textContent='3D preview unavailable. Reload in a WebGL-enabled browser.';
