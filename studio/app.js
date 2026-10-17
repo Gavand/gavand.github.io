@@ -21,7 +21,7 @@ const presets = {
   Forest: {head:'#34383e',body:'#16552e',arms:'#16552e',legs:'#16552e',feet:'#0c3c21',details:'#dea600'},
   Terra: {head:'#34383e',body:'#c7470a',arms:'#c7470a',legs:'#c7470a',feet:'#7e2d0a',details:'#111315'},
   Orbit: {head:'#34383e',body:'#1646ae',arms:'#1646ae',legs:'#1646ae',feet:'#0d2863',details:'#622591'},
-  'Orion suit': {head:'#dedede',body:'#f35b12',arms:'#f35b12',legs:'#f35b12',feet:'#34383e',details:'#111315'}
+  'Orion suit': {head:'#dedede',body:'#c7470a',arms:'#c7470a',legs:'#c7470a',feet:'#34383e',details:'#111315'}
 };
 const storageKey = 'andbotics-ac1-design-v1';
 let design = {...defaultDesign}, activeZone = 'head', currentPreset = 'All white', toastTimer;
