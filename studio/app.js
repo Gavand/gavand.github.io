@@ -17,11 +17,11 @@ const zoneNames = {head:'Head',body:'Body',arms:'Arms',legs:'Legs',feet:'Feet',d
 const colors = [ ['White','#dedede'],['Black','#111315'],['Forest Green','#16552e'],['Graphite','#34383e'],['Orange','#c7470a'],['Blue','#1646ae'],['Yellow','#dea600'],['Purple','#622591'] ];
 const defaultDesign = Object.fromEntries(Object.keys(zoneNames).map(key => [key,'#dedede']));
 const presets = {
-  Studio: {head:'#34383e',body:'#34383e',arms:'#34383e',legs:'#34383e',feet:'#565c64',details:'#c7470a'},
-  Forest: {head:'#34383e',body:'#16552e',arms:'#16552e',legs:'#16552e',feet:'#0c3c21',details:'#dea600'},
-  Terra: {head:'#34383e',body:'#c7470a',arms:'#c7470a',legs:'#c7470a',feet:'#7e2d0a',details:'#111315'},
-  Orbit: {head:'#34383e',body:'#1646ae',arms:'#1646ae',legs:'#1646ae',feet:'#0d2863',details:'#622591'},
-  'Orion suit': {head:'#dedede',body:'#f35b12',arms:'#f35b12',legs:'#f35b12',feet:'#34383e',details:'#111315'}
+  Studio: {head:'#34383e',body:'#34383e',arms:'#34383e',legs:'#34383e',feet:'#c7470a',details:'#c7470a'},
+  Forest: {head:'#34383e',body:'#16552e',arms:'#16552e',legs:'#16552e',feet:'#dea600',details:'#dea600'},
+  Terra: {head:'#34383e',body:'#c7470a',arms:'#c7470a',legs:'#c7470a',feet:'#111315',details:'#111315'},
+  Orbit: {head:'#34383e',body:'#1646ae',arms:'#1646ae',legs:'#1646ae',feet:'#622591',details:'#622591'},
+  'Orion suit': {head:'#dedede',body:'#c7470a',arms:'#c7470a',legs:'#c7470a',feet:'#111315',details:'#111315'}
 };
 const storageKey = 'andbotics-ac1-design-v1';
 let design = {...defaultDesign}, activeZone = 'head', currentPreset = 'All white', toastTimer;
