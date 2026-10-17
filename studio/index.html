@@ -26,7 +26,7 @@
           <p id="piece-error" class="error" role="alert" hidden>Use a six-digit hex color, like #DEDEDE.</p>
           <div class="piece-footer"><span id="override-count">49 selectable pieces</span><button id="clear-part" disabled>Use section color</button><button id="clear-parts" disabled>Clear all edits</button></div>
         </section>
-        <div class="viewer-bottom"><span class="gesture"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M4 11a8 5 0 1 0 3-4M4 4v7h7"/></svg>Drag to rotate · Scroll to zoom</span><button class="icon-button" id="snapshot" title="Download preview" aria-label="Download robot preview image" disabled>↓</button></div>
+        <div class="viewer-bottom"><span class="gesture"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M4 11a8 5 0 1 0 3-4M4 4v7h7"/></svg>Drag to rotate · Scroll to zoom</span></div>
         <div class="view-controls" aria-label="Camera controls"><button data-view="studio" class="active" aria-pressed="true" disabled>Perspective</button><button data-view="front" aria-pressed="false" disabled>Front</button><button data-view="back" aria-pressed="false" disabled>Back</button><span></span><button id="rotate" aria-pressed="false" disabled>↻ <span>Auto-rotate</span></button></div>
       </section>
       <section class="configurator" id="customize" aria-label="Customize your robot">
@@ -41,6 +41,6 @@
   </main>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
   <dialog id="link-dialog"><h2>Your design link</h2><p>Copy this link to reopen this color combination.</p><input id="share-url" readonly aria-label="Design URL"><button id="close-dialog" class="primary-button">Done</button></dialog>
-  <script type="module" src="./app.js?v=preset-colors-1"></script>
+  <script type="module" src="./app.js?v=remove-preview-download-1"></script>
 </body>
 </html>
