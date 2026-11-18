@@ -25,7 +25,7 @@ function render() {
   const spread = THREE.MathUtils.smoothstep(current, .30, .95);
   for (const part of parts) part.mesh.position.copy(part.offset).multiplyScalar(spread);
 
-  const portraitDistance = Math.max(1.52, 1.34 / camera.aspect);
+  const portraitDistance = Math.max(1.40, 1.23 / camera.aspect);
   const wideDistance = Math.max(3.4, 2.4 / camera.aspect);
   const distance = H * THREE.MathUtils.lerp(portraitDistance, wideDistance, pullback);
   const focus = H * THREE.MathUtils.lerp(.79, .48, pullback);
