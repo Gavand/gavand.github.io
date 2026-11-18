@@ -176,7 +176,7 @@ async function initViewer() {
   renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   scene = new THREE.Scene(); camera = new THREE.PerspectiveCamera(31,1,.1,5000);
   controls = new OrbitControls(camera,canvas); controls.enableDamping = true; controls.dampingFactor = .085; controls.enablePan = false;
-  controls.autoRotateSpeed = .8; controls.maxPolarAngle = Math.PI * .51; controls.minPolarAngle = Math.PI * .12;
+  controls.autoRotateSpeed = 1.1; controls.maxPolarAngle = Math.PI * .51; controls.minPolarAngle = Math.PI * .12;
   scene.add(new THREE.HemisphereLight(0xffffff,0x737d61,2.8));
   const key = new THREE.DirectionalLight(0xfff9ed,4); key.position.set(-250,450,350); key.castShadow = true; key.shadow.mapSize.set(2048,2048);
   key.shadow.camera.left=-250; key.shadow.camera.right=250; key.shadow.camera.top=350; key.shadow.camera.bottom=-250; key.shadow.camera.far=1200; key.shadow.normalBias=.35; scene.add(key);
