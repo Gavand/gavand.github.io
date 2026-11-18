@@ -29,12 +29,13 @@ function render() {
   const spread = THREE.MathUtils.smoothstep(current, .30, .95);
   for (const part of parts) part.mesh.position.copy(part.offset).multiplyScalar(spread);
 
-  const portraitDistance = Math.max(.96, .84 / camera.aspect);
+  const portraitDistance = Math.max(1.16, 1.02 / camera.aspect);
   const wideDistance = Math.max(3.4, 2.4 / camera.aspect);
   const distance = H * THREE.MathUtils.lerp(portraitDistance, wideDistance, pullback);
   const focus = H * THREE.MathUtils.lerp(.79, .48, pullback);
-  const angle = .32 + orbit * Math.PI * 2;
-  camera.position.set(Math.sin(angle) * distance, focus + distance * .055, Math.cos(angle) * distance);
+  const elevation = THREE.MathUtils.lerp(.17, .055, pullback);
+  const angle = THREE.MathUtils.lerp(.43, .32, pullback) + orbit * Math.PI * 2;
+  camera.position.set(Math.sin(angle) * distance, focus + distance * elevation, Math.cos(angle) * distance);
   camera.lookAt(0, focus, 0);
   renderer.render(scene, camera);
   if (current !== target) request();
