@@ -2,10 +2,6 @@ import * as THREE from 'three';
 import { STLLoader } from '/studio/assets/vendor/STLLoader.js';
 const story=document.querySelector('.assembly-story'),stage=document.querySelector('.model-stage'),canvas=document.querySelector('#robot-canvas'),range=document.querySelector('#assembly-range'),output=document.querySelector('#assembly-value'),button=document.querySelector('#assemble-button'),status=document.querySelector('.model-status');
 const reduced=matchMedia('(prefers-reduced-motion: reduce)');
-const menu=document.querySelector('.menu-toggle');
-menu.addEventListener('click',()=>{const open=menu.getAttribute('aria-expanded')!=='true';menu.setAttribute('aria-expanded',String(open));document.querySelector('.header').classList.toggle('menu-open',open)});
-document.querySelectorAll('nav a').forEach(a=>a.addEventListener('click',()=>{menu.setAttribute('aria-expanded','false');document.querySelector('.header').classList.remove('menu-open')}));
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){menu.setAttribute('aria-expanded','false');document.querySelector('.header').classList.remove('menu-open')}});
 let target=0,current=target,manual=false,frame=0,visible=true,ready=false,renderer,scene,camera,model,H=1,parts=[];
 function labels(){const pct=Math.round(target*100);range.value=String(pct);output.value=pct+'%';const chapter=pct<34?0:pct<85?1:2;document.querySelector('#chapter-number').textContent=['01 / AC-1','02 / ORBIT','03 / EXPLODED VIEW'][chapter];document.querySelector('#chapter-caption').textContent=['The assembled chassis.','A closer look at the structure.','49 printed parts.'][chapter];button.innerHTML=target>.95?'Return to portrait <span>↗</span>':'Explore parts <span>↗</span>'}
 function request(){if(!frame&&ready&&visible&&!document.hidden)frame=requestAnimationFrame(render)}
