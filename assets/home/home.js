@@ -3,7 +3,8 @@ import { STLLoader } from '/studio/assets/vendor/STLLoader.js';
 const story=document.querySelector('.assembly-story'),stage=document.querySelector('.model-stage'),canvas=document.querySelector('#robot-canvas'),range=document.querySelector('#assembly-range'),output=document.querySelector('#assembly-value'),button=document.querySelector('#assemble-button'),status=document.querySelector('.model-status');
 const reduced=matchMedia('(prefers-reduced-motion: reduce)');
 let target=0,current=target,manual=false,frame=0,visible=true,ready=false,renderer,scene,camera,model,H=1,parts=[];
-function labels(){const pct=Math.round(target*100);range.value=String(pct);output.value=pct+'%';const chapter=pct<34?0:pct<85?1:2;document.querySelector('#chapter-number').textContent=['01 / AC-1','02 / ORBIT','03 / EXPLODED VIEW'][chapter];document.querySelector('#chapter-caption').textContent=['The assembled chassis.','A closer look at the structure.','49 printed parts.'][chapter];button.innerHTML=target>.95?'Return to portrait <span>↗</span>':'Explore parts <span>↗</span>'}
+let previousLabel = -1;
+function labels(){const pct=Math.round(target*100);if (pct === previousLabel) return; previousLabel = pct; range.value=String(pct);output.value=pct+'%';const chapter=pct<34?0:pct<85?1:2;document.querySelector('#chapter-number').textContent=['01 / AC-1','02 / ORBIT','03 / EXPLODED VIEW'][chapter];document.querySelector('#chapter-caption').textContent=['The assembled chassis.','A closer look at the structure.','49 printed parts.'][chapter];button.innerHTML=target>.95?'Return to portrait <span>↗</span>':'Explore parts <span>↗</span>'}
 function request(){if(!frame&&ready&&visible&&!document.hidden)frame=requestAnimationFrame(render)}
 function fromScroll(){if(manual||reduced.matches)return;const rect=story.getBoundingClientRect();target=THREE.MathUtils.clamp(-rect.top/(story.offsetHeight-innerHeight),0,1);labels();request()}
 addEventListener('scroll',()=>{manual=false;fromScroll()},{passive:true});
@@ -36,7 +37,7 @@ function render() {
   renderer.render(scene, camera);
   if (current !== target) request();
 }
-async function init(){try{renderer=new THREE.WebGLRenderer({canvas,alpha:true,antialias:true,powerPreference:'low-power'});renderer.setPixelRatio(Math.min(devicePixelRatio||1,1.75));renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.05;scene=new THREE.Scene();camera=new THREE.PerspectiveCamera(31,1,.1,5000);scene.add(new THREE.HemisphereLight(0xfffcf5,0x858778,1.35));const key=new THREE.DirectionalLight(0xfff7e8,2.35);key.position.set(-250,450,350);scene.add(key);const fill=new THREE.DirectionalLight(0xe5eeff,1.5);fill.position.set(300,150,-150);scene.add(fill);model=new THREE.Group();model.rotation.x=-Math.PI/2;scene.add(model);const response=await fetch('/studio/assets/models/ac1/manifest.json');if(!response.ok)throw Error('Model manifest unavailable');const manifest=await response.json();const mins=[0,1,2].map(i=>Math.min(...manifest.parts.map(p=>p.bounds[i][0]))),maxs=[0,1,2].map(i=>Math.max(...manifest.parts.map(p=>p.bounds[i][1])));H=maxs[2]-mins[2];const cx=(mins[0]+maxs[0])/2,cy=(mins[1]+maxs[1])/2;let index=0,loaded=0;const loader=new STLLoader();
+async function init(){try{renderer=new THREE.WebGLRenderer({canvas,alpha:true,antialias:true,powerPreference:'default'});renderer.setPixelRatio(Math.min(devicePixelRatio||1,1.25));renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.05;scene=new THREE.Scene();camera=new THREE.PerspectiveCamera(31,1,.1,5000);scene.add(new THREE.HemisphereLight(0xfffcf5,0x858778,1.35));const key=new THREE.DirectionalLight(0xfff7e8,2.35);key.position.set(-250,450,350);scene.add(key);const fill=new THREE.DirectionalLight(0xe5eeff,1.5);fill.position.set(300,150,-150);scene.add(fill);model=new THREE.Group();model.rotation.x=-Math.PI/2;scene.add(model);const response=await fetch('/studio/assets/models/ac1/manifest.json');if(!response.ok)throw Error('Model manifest unavailable');const manifest=await response.json();const mins=[0,1,2].map(i=>Math.min(...manifest.parts.map(p=>p.bounds[i][0]))),maxs=[0,1,2].map(i=>Math.max(...manifest.parts.map(p=>p.bounds[i][1])));H=maxs[2]-mins[2];const cx=(mins[0]+maxs[0])/2,cy=(mins[1]+maxs[1])/2;let index=0,loaded=0;const loader=new STLLoader();
   function satinPlastic(color) {
     return new THREE.MeshPhysicalMaterial({
       color, metalness: 0, roughness: .44, ior: 1.48,
@@ -56,4 +57,11 @@ async function init(){try{renderer=new THREE.WebGLRenderer({canvas,alpha:true,an
   async function worker(){while(index<manifest.parts.length){const p=manifest.parts[index++];const geometry=await loader.loadAsync('/studio/assets/models/ac1/'+p.file);geometry.translate(-cx,-cy,-mins[2]);const mesh = new THREE.Mesh(geometry, materialForPart(p.id));
       model.add(mesh);
       const x=(p.bounds[0][0]+p.bounds[0][1])/2-cx,y=(p.bounds[1][0]+p.bounds[1][1])/2-cy,z=(p.bounds[2][0]+p.bounds[2][1])/2-mins[2];const side=x>=0?1:-1;const offset=new THREE.Vector3(x*.7+side*H*.06,y*.8, (z-H*.45)*.55);if(p.id.startsWith('D')||p.id.startsWith('E'))offset.x+=side*H*.12;if(p.id==='C9')offset.z+=H*.09;parts.push({mesh,offset});document.querySelector('#load-progress').textContent=++loaded+' / 49'}}await Promise.all(Array.from({length:5},worker));const ring=new THREE.Mesh(new THREE.RingGeometry(H*.37,H*.373,100),new THREE.MeshBasicMaterial({color:0xb9c3ad,transparent:true,opacity:.55,side:THREE.DoubleSide}));ring.rotation.x=-Math.PI/2;ring.position.y=-H*.02;scene.add(ring);ready=true;status.classList.add('done');resize();fromScroll();labels();request()}catch(error){console.error('AC-1 preview:',error);stage.classList.add('fallback');status.textContent='Explore AC-1 in the Color Studio';status.style.top='auto';status.style.bottom='30px';document.querySelector('.assembly-controls').hidden=true;story.style.height='auto';document.querySelector('.assembly-stage').style.position='relative'}}
-labels();init();
+labels();
+const loadObserver = new IntersectionObserver(entries => {
+  if (entries.some(entry => entry.isIntersecting)) {
+    loadObserver.disconnect();
+    init();
+  }
+}, {rootMargin: '600px'});
+loadObserver.observe(story);
